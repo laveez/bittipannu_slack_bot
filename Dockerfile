@@ -1,5 +1,7 @@
 FROM nginx:1.15.12-alpine
 
+ENV SLACK_CREDENTIAL_PATH /secrets/slack_credentials.json
+
 # Copy python requirements file
 COPY requirements.txt /tmp/requirements.txt
 

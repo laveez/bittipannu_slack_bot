@@ -1,0 +1,81 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: bittipannu-slack-integration
+    role: webhook
+    version: master
+  name: bittipannu-slack-integration
+  namespace: bittipannu-slack
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bittipannu-slack-integration
+      role: webhook
+      version: master
+  template:
+    metadata:
+      labels:
+        app: bittipannu-slack-integration
+        role: webhook
+        version: master
+      name: bittipannu-slack-integration
+    spec:
+      containers:
+      - image: eu.gcr.io/ptcs-docker-registry/bittipannu-slack-integration:latest-master
+        imagePullPolicy: Always
+        name: bittipannu-slack-integration
+        volumeMounts:
+        - mountPath: /secrets
+          name: bittipannu-slack-credentials
+      volumes:
+      - name: bittipannu-slack-credentials
+        secret:
+          secretName: bittipannu-slack-credentials
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: bittipannu-slack-integration
+    role: webhook
+    version: master
+  name: bittipannu-slack-integration
+  namespace: bittipannu-slack
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: bittipannu-slack-integration
+    role: webhook
+    version: master
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: type-master-ingress
+  namespace: bittipannu-slack
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    traefik.frontend.rule.type: PathPrefixStrip
+  labels:
+    traefik-type: public
+spec:
+  rules:
+    - host: bittipannu-slack-master.protacon.cloud
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: bittipannu-slack-integration
+              servicePort: 80
+  tls:
+    - hosts:
+      - bittipannu-slack-master.protacon.cloud
+      secretName: bittipannu-slack-crt

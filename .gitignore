@@ -3,6 +3,7 @@
 out
 node_modules
 env
+k8s/secrets
 *.pyc
 *.vsix
 **/.vscode/.ropeproject/**

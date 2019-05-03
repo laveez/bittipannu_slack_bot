@@ -1,8 +1,10 @@
 import datetime
 import urllib
 import json
+import os
 from flask import Flask, request
 from slackclient import SlackClient
+
 app = Flask(__name__)
 
 # flask
@@ -21,8 +23,9 @@ def verify():
 
 @app.route("/")
 def hello():
+    slack_credentials = dict()
     url = 'https://www.sodexo.fi/ruokalistat/output/daily_json/5865/' + datetime.date.today().strftime('%Y/%m/%d') + '/fi';
-    print('URL: {}'.format(url))
+
     response = urllib.request.urlopen(url)
     data = json.loads(response.read())
 
@@ -32,10 +35,13 @@ def hello():
         if item['category'] not in ['Sweet', 'Mix & Match']
     ])
 
+    with open(os.environ['SLACK_CREDENTIAL_PATH'], 'r') as f:
+        slack_credentials = json.load(f)    
+    
     sc = SlackClient(
-        refresh_token="", #slack_refresh_token,
-        client_id="", #insert client_id
-        client_secret="", #insert client_secret
+        refresh_token=slack_credentials.get('refresh_token', ''),
+        client_id=slack_credentials.get('client_id', ''),
+        client_secret=slack_credentials.get('client_secret', ''),
         token_update_callback=cb 
     )
 
@@ -47,11 +53,11 @@ def hello():
         text=res_str
     )
 
-        # $message = $this->slackClient->createMessage()
-        #     ->to($slackIncomingWebHook->getChannelName())
-        #     ->from('Bittipannu ruokalista')
-        #     ->setIcon(':tonni:')
-        #     ->setText($text);
+    # $message = $this->slackClient->createMessage()
+    #     ->to($slackIncomingWebHook->getChannelName())
+    #     ->from('Bittipannu ruokalista')
+    #     ->setIcon(':tonni:')
+    #     ->setText($text);
 
-        # $this->slackClient->sendMessage($message);
+    # $this->slackClient->sendMessage($message);
     return '<pre>' + res_str + '</pre>'
