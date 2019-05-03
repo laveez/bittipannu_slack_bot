@@ -29,8 +29,7 @@ def hello():
     res_str = '*Bittipannun päivän ruokalista:*\n - ' + '\n - '.join([
         '{} ({})'.format(item['title_fi'], item['price'][:4]) 
         for item in data['courses'] 
-        if item['category'] 
-        not in ['Sweet', 'Salad', 'Mix & Match']
+        if item['category'] not in ['Sweet', 'Mix & Match']
     ])
 
     sc = SlackClient(
